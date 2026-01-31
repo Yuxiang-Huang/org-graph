@@ -57,5 +57,8 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Sync Dependencies
+        run: bun run sync
+
       - name: Run checks
         run: bun run check
