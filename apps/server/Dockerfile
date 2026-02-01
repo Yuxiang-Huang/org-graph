@@ -13,7 +13,7 @@ COPY . .
 RUN bun install --frozen-lockfile
 
 # Generate OpenAPI spec
-RUN cd apps/server && bun run tsoa && bun run openapi
+RUN bun run sync
 
 # Build the project
 RUN bun run build --filter=@scottystack/server...
@@ -27,11 +27,25 @@ RUN groupadd --system --gid 1001 server && \
     useradd --system --uid 1001 --gid 1001 server
 USER server
 
-# Copy swagger UI
-COPY --from=builder --chown=server:server /app/apps/server/build/swagger.yaml ./build/swagger.yaml
+# Copy Swagger spec
+COPY --from=builder --chown=server:server \
+  /app/apps/server/build/swagger.yaml \
+  /app/apps/server/build/swagger.yaml
+
+# Copy Swagger UI dist
+# (which can be either in apps/node_modules or apps/server/node_modules)
+# COPY --from=builder --chown=server:server \
+#   /app/apps/node_modules/swagger-ui-dist \
+#   /app/apps/node_modules/swagger-ui-dist
+COPY --from=builder --chown=server:server \
+  /app/apps/server/node_modules/swagger-ui-dist \
+  /app/apps/server/node_modules/swagger-ui-dist
 
 # Copy only what's needed to run the server
-COPY --from=builder --chown=server:server /app/apps/server/dist ./apps/server/dist
+COPY --from=builder --chown=server:server \
+  /app/apps/server/dist \
+  /app/apps/server/dist
 
 EXPOSE 3000
-CMD ["bun", "apps/server/dist/server.js"]
+WORKDIR /app/apps/server
+CMD ["bun", "dist/server.js"]
