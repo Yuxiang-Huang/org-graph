@@ -12,8 +12,8 @@ COPY . .
 # Install deps from bun.lock
 RUN bun install --frozen-lockfile
 
-# Generate OpenAPI spec
-RUN bun run sync
+# Generate artifacts
+RUN bun run generate
 
 # Build the project
 RUN bun run build --filter=@scottystack/server...
