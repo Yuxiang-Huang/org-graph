@@ -15,13 +15,6 @@ export class AuthenticationError extends HttpError {
   }
 }
 
-export class AuthorizationError extends HttpError {
-  constructor(message: string) {
-    super(403, message);
-    this.name = "Forbidden";
-  }
-}
-
 export class InternalServerError extends HttpError {
   constructor(message: string) {
     super(500, message);

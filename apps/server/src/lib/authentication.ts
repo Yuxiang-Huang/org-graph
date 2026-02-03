@@ -9,15 +9,12 @@ import { env } from "../env.ts";
 import type { HttpError } from "../middlewares/errorHandler.ts";
 import {
   AuthenticationError,
-  AuthorizationError,
   InternalServerError,
 } from "../middlewares/errorHandler.ts";
 import { auth } from "./auth.ts";
 
 export const OIDC_AUTH = "oidc";
 export const BEARER_AUTH = "bearerAuth";
-export const ADMIN_SCOPE = "stack-admins";
-export const MEMBER_SCOPE = "stack-devs";
 
 declare module "express" {
   interface Request {
@@ -39,7 +36,6 @@ declare global {
       sub: string;
       email?: string;
       givenName?: string;
-      groups?: string[];
     }
   }
 }
@@ -47,7 +43,6 @@ declare global {
 export function expressAuthentication(
   request: express.Request,
   securityName: string,
-  scopes?: string[],
 ) {
   // Store all authentication errors in the request object
   // so we can return the most relevant error to the client in errorHandler
@@ -55,11 +50,11 @@ export function expressAuthentication(
 
   return new Promise((resolve, reject) => {
     if (securityName === OIDC_AUTH) {
-      return validateOidc(request, reject, resolve, scopes);
+      return validateOidc(request, reject, resolve);
     }
 
     if (securityName === BEARER_AUTH) {
-      return verifyBearerAuth(request, reject, resolve, scopes);
+      return verifyBearerAuth(request, reject, resolve);
     }
 
     const err = new InternalServerError("Invalid security name");
@@ -73,7 +68,6 @@ const validateOidc = async (
   request: express.Request,
   reject: (value: unknown) => void,
   resolve: (value: unknown) => void,
-  scopes?: string[],
 ) => {
   // Check if the user is authenticated
   try {
@@ -106,11 +100,6 @@ const validateOidc = async (
       return reject(err);
     }
 
-    // Check if the user has any of the required scopes
-    if (!hasAnyScope(decoded["groups"] ?? [], scopes)) {
-      return scopeValidationError(request, reject);
-    }
-
     return resolve(decodedTokenToUser(decoded));
   } catch (error) {
     console.error("Authentication error:", error);
@@ -126,7 +115,6 @@ const verifyBearerAuth = (
   request: express.Request,
   reject: (value: unknown) => void,
   resolve: (value: unknown) => void,
-  scopes?: string[],
 ) => {
   const token = request.headers.authorization?.split(" ")[1];
   if (!token) {
@@ -167,48 +155,15 @@ const verifyBearerAuth = (
         return reject(err);
       }
 
-      // Check if the token contains any of the required scopes
-      if (!hasAnyScope(decoded["groups"], scopes)) {
-        return scopeValidationError(request, reject);
-      }
-
       return resolve(decodedTokenToUser(decoded));
     },
   );
 };
 
-// Verify if the groups contain ANY of the required scopes
-const hasAnyScope = (groups?: string[], scopes?: string[]) => {
-  // If no scopes are required, return true
-  if (!scopes || scopes.length === 0) {
-    return true;
-  }
-
-  // If no groups are present, return false
-  if (!groups || groups.length === 0) {
-    return false;
-  }
-
-  // Check if any of the groups contain any of the required scopes
-  return groups.some((group) => scopes.includes(group));
-};
-
-const scopeValidationError = (
-  request: express.Request,
-  reject: (value: unknown) => void,
-) => {
-  const err = new AuthorizationError(
-    "Insufficient permissions to access this resource.",
-  );
-  request.authErrors?.push(err);
-  return reject(err);
-};
-
-const decodedTokenToUser = (decoded: jwt.JwtPayload) => {
+const decodedTokenToUser = (decoded: jwt.JwtPayload): Express.User => {
   return {
-    sub: decoded.sub,
+    sub: decoded.sub as string,
     email: decoded["email"],
     givenName: decoded["given_name"],
-    groups: decoded["groups"],
   };
 };
