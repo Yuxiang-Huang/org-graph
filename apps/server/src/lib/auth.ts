@@ -7,7 +7,13 @@ export const auth = betterAuth({
   // biome-ignore lint/style/useNamingConvention: defined by better-auth
   baseURL: env.SERVER_URL,
   trustedOrigins: [env.BETTER_AUTH_URL],
-
+  advanced: {
+    useSecureCookies: true,
+    defaultCookieAttributes: {
+      sameSite: "none", // allow cross-site cookies since web and server are on different domains
+      secure: true,
+    },
+  },
   plugins: [
     // https://www.better-auth.com/docs/plugins/generic-oauth#pre-configured-provider-helpers
     genericOAuth({
