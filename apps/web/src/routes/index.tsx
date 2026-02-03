@@ -10,6 +10,7 @@ export const Route = createFileRoute("/")({
 
 function App() {
   const { data: auth } = useSession();
+  const image = auth?.user?.image;
 
   if (!auth?.user) {
     return (
@@ -29,9 +30,16 @@ function App() {
 
   return (
     <>
+      {typeof image === "string" && (
+        <img
+          src={image}
+          alt="Profile"
+          className="w-10 h-10 rounded-full"
+          referrerPolicy="no-referrer"
+        />
+      )}
       <Hello />
       <AuthHello />
-      <div>Groups: {auth?.user.groups?.join(", ")}</div>
       <Button size="md" theme="brand" className="inline" onClick={signOut}>
         Sign Out
       </Button>
