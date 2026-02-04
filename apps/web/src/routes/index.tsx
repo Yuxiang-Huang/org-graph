@@ -1,8 +1,8 @@
-import { Button } from "@scottylabs/corgi";
 import { createFileRoute } from "@tanstack/react-router";
 import { AuthHello } from "@/components/AuthHello.tsx";
 import { Hello } from "@/components/Hello.tsx";
 import { Profile } from "@/components/Profile.ui.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { signIn, signOut, useSession } from "@/lib/auth/client.ts";
 
 export const Route = createFileRoute("/")({
@@ -18,15 +18,7 @@ function App() {
         <Hello />
         <AuthHello />
         <p>
-          Unauthenticated.{" "}
-          <Button
-            size="md"
-            theme="brand"
-            className="inline"
-            onClick={() => signIn()}
-          >
-            Sign In
-          </Button>
+          Unauthenticated. <Button onClick={() => signIn()}>Sign In</Button>
         </p>
       </div>
     );
@@ -37,9 +29,7 @@ function App() {
       <Profile />
       <Hello />
       <AuthHello />
-      <Button size="md" theme="brand" className="inline" onClick={signOut}>
-        Sign Out
-      </Button>
+      <Button onClick={signOut}>Sign Out</Button>
     </>
   );
 }

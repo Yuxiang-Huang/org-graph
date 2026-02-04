@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@scottylabs/corgi/css";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -134,5 +133,11 @@ code {
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* https://ui.shadcn.com/docs/components/radix/button */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
