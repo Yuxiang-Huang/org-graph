@@ -21,7 +21,7 @@ jobs:
         uses: editorconfig-checker/action-editorconfig-checker@main
 
       - name: Run EditorConfig checker
-        run: editorconfig-checker --exclude '^LICENSE'
+        run: editorconfig-checker --exclude '(^LICENSE|^apps/server/drizzle/.*$)'
 
   markdownlint:
     name: Markdown Lint
@@ -57,7 +57,7 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Generate artifacts
+      - name: Generate TSOA and OpenAPI artifacts
         run: bun run generate
 
       - name: Run checks
